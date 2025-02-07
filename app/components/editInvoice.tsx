@@ -1,4 +1,4 @@
-'use client';
+'use client'
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,66 +10,66 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { PopoverTrigger } from "@radix-ui/react-popover";
 import { CalendarHeartIcon } from "lucide-react";
-import {  useState } from "react";
-import {useActionState} from "react"
+import { useEffect, useState } from "react";
+import { useActionState } from "react"
 import SubmitButton from "./SubmitButton";
-import { CreateInvoice } from "../action";
+import { UpdateInvoice } from "../action";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { invoiceSchema } from "../utils/zodSchema";
+import { Prisma } from "@prisma/client";
 
 
-interface iAppProps{
-  firstName:string,
-  lastName:string,
-  address:string,
-  email:string
+interface iAppProps {
+  data: Prisma.InvoiceGetPayload<{}>
 }
 
-export default function InvoiceCreate({address,email,firstName,lastName}:iAppProps) {
-  function formatCurrency(amount:number,currency:string){
+
+export function EditInvoiceComponent({ data }: iAppProps) {
+  function formatCurrency(amount: number, currency: string) {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(amount)
   }
-  const [lastResult, action] = useActionState(CreateInvoice,null);
-console.log(action)
+  const [selectedDate, setSelectedDate] = useState(data.date);
+
+  // Calculate total amount
+  const [rate, setRate] = useState(data.invoiceItemRate.toString())
+  const [quantity, setQuantity] = useState(data.invoiceItemQuantity.toString())
+  const [total, setTotal] = useState((Number(quantity) || 0) * (Number(rate) || 0));
+useEffect(() => {
+  setTotal((Number(quantity) || 0) * (Number(rate) || 0));
+}, [quantity, rate]);
+
+  console.log(total)
+  const [currency, setCurrency] = useState(data.currency)
+  const [lastResult, action] = useActionState(UpdateInvoice, null);
+  console.log(action)
   console.log(lastResult)
-  
+
   const [form, fields] = useForm({
     lastResult,
     onValidate({ formData }) {
       console.log("Validating form data:", Object.fromEntries(formData));
       return parseWithZod(formData, { schema: invoiceSchema });
-  }
-  
-  ,  
-    
+    }
+
+    ,
+
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
-
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  
-  // Calculate total amount
-  const [rate,setRate]=useState("")
-  const [quantity,setQuantity]=useState("")
-  
-  const total = (Number(quantity) || 0) * (Number(rate) || 0);
-console.log(total)
-const [currency,setCurrency]=useState("USD")
-
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Create New Invoice</CardTitle>
       </CardHeader>
       <CardContent className="p-6">
-        
-      <form id={form.id} action={action} onSubmit={form.onSubmit} noValidate className="space-y-8">
 
+        <form id={form.id} action={action} onSubmit={form.onSubmit} noValidate className="space-y-8">
+          <input type="hidden" name="id" value={data.id} />
           <input type="hidden" name={fields.date.name} key={fields.date.name} value={selectedDate.toISOString()} />
           <input type="hidden" name={fields.total.name} key={fields.total.name} value={total} />
-         
-<input type="hidden" name={fields.status.name} value="PENDING" />
+
+          <input type="hidden" name={fields.status.name} value="PENDING" />
           {/* Invoice Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex flex-col gap-2 w-full sm:w-auto">
@@ -78,7 +78,7 @@ const [currency,setCurrency]=useState("USD")
                 <Input
                   name={fields.invoiceName.name}
                   key={fields.invoiceName.key}
-                  defaultValue={fields.invoiceName.initialValue}
+                  defaultValue={data.invoiceName}
                   placeholder="Invoice Name"
                   className="w-full sm:w-64"
                 />
@@ -96,7 +96,7 @@ const [currency,setCurrency]=useState("USD")
                 <Input
                   name={fields.invoiceNumber.name}
                   key={fields.invoiceNumber.key}
-                  defaultValue={fields.invoiceNumber.initialValue}
+                  defaultValue={data.invoiceNumber}
                   className="rounded-l-none"
                   placeholder="INV-001"
                 />
@@ -106,8 +106,8 @@ const [currency,setCurrency]=useState("USD")
 
             <div className="space-y-2">
               <Label>Currency</Label>
-              <Select name={fields.currency.name} defaultValue="USD" key={fields.currency.key} 
-              onValueChange={(value)=>setCurrency(value)}>
+              <Select name={fields.currency.name} defaultValue="USD" key={fields.currency.key}
+                onValueChange={(value) => setCurrency(value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select Currency" />
                 </SelectTrigger>
@@ -121,10 +121,10 @@ const [currency,setCurrency]=useState("USD")
 
             <div className="space-y-2">
               <Label>Due Date</Label>
-              <Select 
-                name={fields.dueDate.name} 
+              <Select
+                name={fields.dueDate.name}
                 key={fields.dueDate.key}
-                defaultValue={fields.dueDate.initialValue }
+                defaultValue={data.dueDate.toString()}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select Due Date" />
@@ -148,9 +148,9 @@ const [currency,setCurrency]=useState("USD")
                   <Input
                     name={fields.fromName.name}
                     key={fields.fromName.key}
-                    defaultValue={firstName + " " + lastName}
+                    defaultValue={data.fromName}
                     placeholder="Your Name"
-                    
+
                     className="w-full"
                   />
                   <p className="text-sm text-red-500 mt-1">{fields.fromName.errors}</p>
@@ -159,7 +159,7 @@ const [currency,setCurrency]=useState("USD")
                   <Input
                     name={fields.fromEmail.name}
                     key={fields.fromEmail.key}
-                    defaultValue={email}
+                    defaultValue={data.fromEmail}
                     placeholder="Your Email"
                     className="w-full"
                   />
@@ -169,7 +169,7 @@ const [currency,setCurrency]=useState("USD")
                   <Input
                     name={fields.fromAddress.name}
                     key={fields.fromAddress.key}
-                    defaultValue={address}
+                    defaultValue={data.fromAddress}
                     placeholder="Your Address"
                     className="w-full"
                   />
@@ -185,7 +185,7 @@ const [currency,setCurrency]=useState("USD")
                   <Input
                     name={fields.clientName.name}
                     key={fields.clientName.key}
-                    defaultValue={fields.clientName.initialValue}
+                    defaultValue={data.clientName}
                     placeholder="Customer Name"
                     className="w-full"
                   />
@@ -195,7 +195,7 @@ const [currency,setCurrency]=useState("USD")
                   <Input
                     name={fields.clientEmail.name}
                     key={fields.clientEmail.key}
-                    defaultValue={fields.clientEmail.initialValue}
+                    defaultValue={data.clientEmail}
                     placeholder="Customer Email"
                     className="w-full"
                   />
@@ -205,7 +205,7 @@ const [currency,setCurrency]=useState("USD")
                   <Input
                     name={fields.clientAddress.name}
                     key={fields.clientAddress.key}
-                    defaultValue={fields.clientAddress.initialValue}
+                    defaultValue={data.clientAddress}
                     placeholder="Customer Address"
                     className="w-full"
                   />
@@ -218,7 +218,7 @@ const [currency,setCurrency]=useState("USD")
           {/* Date Selection */}
           <div className="space-y-2">
             <div>
-            <Label>Invoice Date</Label>
+              <Label>Invoice Date</Label>
             </div>
             <Popover>
               <PopoverTrigger asChild>
@@ -226,8 +226,8 @@ const [currency,setCurrency]=useState("USD")
                   <CalendarHeartIcon className="mr-2 h-4 w-4" />
                   {selectedDate
                     ? new Intl.DateTimeFormat("en-US", {
-                        dateStyle: "long",
-                      }).format(selectedDate)
+                      dateStyle: "long",
+                    }).format(selectedDate)
                     : "Pick a Date"}
                 </Button>
               </PopoverTrigger>
@@ -246,94 +246,94 @@ const [currency,setCurrency]=useState("USD")
 
           {/* Invoice Items */}
           <div className="space-y-4">
-        {/* Desktop Headers */}
-        <div className="hidden sm:grid sm:grid-cols-12 gap-4 font-medium text-sm">
-          <p className="col-span-6">Description</p>
-          <p className="col-span-2">Quantity</p>
-          <p className="col-span-2">Rate</p>
-          <p className="col-span-2">Amount</p>
-        </div>
+            {/* Desktop Headers */}
+            <div className="hidden sm:grid sm:grid-cols-12 gap-4 font-medium text-sm">
+              <p className="col-span-6">Description</p>
+              <p className="col-span-2">Quantity</p>
+              <p className="col-span-2">Rate</p>
+              <p className="col-span-2">Amount</p>
+            </div>
 
-        {/* Mobile + Desktop Form Fields */}
-        <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-12 sm:gap-4">
-          {/* Description */}
-          <div className="sm:col-span-6">
-            <Label className="sm:hidden mb-2">Description</Label>
-            <Textarea
-              name={fields.invoiceItemDescription.name}
-              key={fields.invoiceItemDescription.key}
-              defaultValue={fields.invoiceItemDescription.initialValue}
-              placeholder="Enter Description"
-              className="resize-none"
-            />
-            <p className="text-sm text-red-500 mt-1">{fields.invoiceItemDescription.errors}</p>
-          </div>
+            {/* Mobile + Desktop Form Fields */}
+            <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-12 sm:gap-4">
+              {/* Description */}
+              <div className="sm:col-span-6">
+                <Label className="sm:hidden mb-2">Description</Label>
+                <Textarea
+                  name={fields.invoiceItemDescription.name}
+                  key={fields.invoiceItemDescription.key}
+                  defaultValue={data.invoiceItemDescription}
+                  placeholder="Enter Description"
+                  className="resize-none"
+                />
+                <p className="text-sm text-red-500 mt-1">{fields.invoiceItemDescription.errors}</p>
+              </div>
 
-          {/* Quantity */}
-          <div className="sm:col-span-2">
-            <Label className="sm:hidden mb-2">Quantity</Label>
-            <Input
-              name={fields.invoiceItemQuantity.name}
-              key={fields.invoiceItemQuantity.key}
-              defaultValue={fields.invoiceItemQuantity.initialValue}
-              onChange={(e) => setQuantity(e.target.value)}
-              placeholder="0"
-              type="number"
-              min="1"
-            />
-            <p className="text-sm text-red-500 mt-1">{fields.invoiceItemQuantity.errors}</p>
-          </div>
+              {/* Quantity */}
+              <div className="sm:col-span-2">
+                <Label className="sm:hidden mb-2">Quantity</Label>
+                <Input
+                  name={fields.invoiceItemQuantity.name}
+                  key={fields.invoiceItemQuantity.key}
+                  defaultValue={data.invoiceItemQuantity.toString()}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  placeholder="0"
+                  type="number"
+                  min="1"
+                />
+                <p className="text-sm text-red-500 mt-1">{fields.invoiceItemQuantity.errors}</p>
+              </div>
 
-          {/* Rate */}
-          <div className="sm:col-span-2">
-            <Label className="sm:hidden mb-2">Rate</Label>
-            <Input
-              name={fields.invoiceItemRate.name}
-              key={fields.invoiceItemRate.key}
-              defaultValue={fields.invoiceItemRate.initialValue}
-              onChange={(e)=>setRate(e.target.value)}
-              placeholder="0"
-              type="number"
-              min="1"
-            />
-            <p className="text-sm text-red-500 mt-1">{fields.invoiceItemRate.errors}</p>
-          </div>
+              {/* Rate */}
+              <div className="sm:col-span-2">
+                <Label className="sm:hidden mb-2">Rate</Label>
+                <Input
+                  name={fields.invoiceItemRate.name}
+                  key={fields.invoiceItemRate.key}
+                  defaultValue={data.invoiceItemRate}
+                  onChange={(e) => setRate(e.target.value)}
+                  placeholder="0"
+                  type="number"
+                  min="1"
+                />
+                <p className="text-sm text-red-500 mt-1">{fields.invoiceItemRate.errors}</p>
+              </div>
 
-          {/* Amount */}
-          <div className="sm:col-span-2">
-            <Label className="sm:hidden mb-2">Amount</Label>
-            <Input 
-              value={formatCurrency(Number(total.toFixed(2)),currency)} 
-          
-              disabled 
-              className="bg-muted"
-            />
+              {/* Amount */}
+              <div className="sm:col-span-2">
+                <Label className="sm:hidden mb-2">Amount</Label>
+                <Input
+                  value={formatCurrency(Number(data.total.toFixed(2)), currency)}
+
+                  disabled
+                  className="bg-muted"
+                />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
           {/* Total Section */}
           <div className="flex justify-end">
             <div className="w-full sm:w-1/3">
               <div className="flex justify-between py-2">
                 <span className="text-sm">Subtotal</span>
-                <span className="font-medium">{formatCurrency(Number(total.toFixed(2)), currency)}</span>
+                <span className="font-medium">{formatCurrency(Number(data.total.toFixed(2)), currency)}</span>
               </div>
               <div className="flex justify-between py-2 border-t">
-                <span className="text-sm">Total ({currency})</span>
-                <span className="font-medium text-lg">{formatCurrency(Number(total.toFixed(2)), currency)}</span>
+                <span className="text-sm">Total ({data.currency})</span>
+                <span className="font-bold">{formatCurrency(Number(data.total.toFixed(2)), currency)}</span>
               </div>
             </div>
           </div>
-<div>
-  <Label>Note</Label>
-  <Textarea   name={fields.note.name}
+          <div>
+            <Label>Note</Label>
+            <Textarea name={fields.note.name}
               key={fields.note.key}
-              defaultValue={fields.note.initialValue}></Textarea>
-</div>
+              defaultValue={data.note ?? undefined}></Textarea>
+          </div>
           {/* Submit Button */}
           <div className="flex justify-end">
-            <SubmitButton text="Send Invoice"  />
+            <SubmitButton text="Send Invoice" />
           </div>
         </form>
       </CardContent>

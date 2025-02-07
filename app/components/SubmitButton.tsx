@@ -1,20 +1,39 @@
-"use client"
 
+"use client"
 import { Button } from "@/components/ui/button"
 import { useFormStatus } from "react-dom"
 import { Loader2 } from "lucide-react"
 interface SubmitButtonProps {
-  text:string
+  text: string,
+  variant?: 
+  |"default"
+  |"destructive"
+  |"secondary"
+  |"outline"
+  |"ghost"
+  |"link"
+  |null
+  |undefined
 }
-export default function SubmitButton({text}:SubmitButtonProps) {
+
+
+
+export default function SubmitButton({ text,variant }: SubmitButtonProps) {
   const { pending } = useFormStatus()
-  console.log(pending)  // useFormStatus is a hook that returns the status of the form
+  console.log('Pending:', pending);
+
+  console.log(FormData)
+  console.log("ckiccllll")
+
+
+  // useFormStatus is a hook that returns the status of the form
   return (
     <>
-    {pending ?<Button disabled 
-     ><Loader2 className="animate-spin"/>Please wait...</Button>:<Button  type="submit" className="bg-black text-white rounded-md w-full">{text}</Button>}
+      {pending ? <Button disabled type="submit"
+      ><Loader2 className="animate-spin w-full" />Please wait...</Button> : 
+      <Button type="submit" variant={variant}  className= "rounded-md w-full " >{text}</Button>}
     </>
 
-      
+
   )
 }
