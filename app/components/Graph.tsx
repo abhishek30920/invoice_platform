@@ -2,7 +2,7 @@
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 import { Line, ResponsiveContainer, XAxis, YAxis,LineChart } from "recharts";
-import { type } from './../../components/ui/calendar';
+
 interface iAppProps{
   data:{date:string,amount:number}[]
 }

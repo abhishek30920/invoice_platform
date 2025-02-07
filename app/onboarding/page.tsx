@@ -26,7 +26,7 @@ export default function Onboarding() {
       <div className="absolute inset-0 -z-10 h-full w-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#63e_100%)]"></div>
       <Card className="w-full max-w-lg p-4 shadow-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl font-bold">You're Almost Finished!</CardTitle>
+          <CardTitle className="text-xl font-bold">You are Almost Finished!</CardTitle>
           <CardDescription>
             Enter your information to complete the onboarding process
           </CardDescription>

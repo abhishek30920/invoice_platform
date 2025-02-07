@@ -13,7 +13,8 @@ interface SubmitButtonProps {
   |"ghost"
   |"link"
   |null
-  |undefined
+  |undefined,
+  children?: React.ReactNode;
 }
 
 
