@@ -84,7 +84,7 @@ console.log(submission)
   }
   emailClient.send({
     from :sender,
-    to:[{email:"abhishek309200@gmail.com"}],
+    to:[{email:process.env.email}],
     template_uuid: "0791434e-90ab-40e5-9007-55e004503116",
     template_variables: {
       "clientName": submission.value.clientName,
@@ -92,7 +92,7 @@ console.log(submission)
       "invoiceDate": submission.value.date,
       "dueDate": submission.value.dueDate,
       "totalAmount": fomatCurrency(submission.value.total,submission.value.currency),
-      "invoiceLink":`http://localhost:3000/api/invoice/${data.id}`
+      "invoiceLink":`https://invoice-platform-xi.vercel.app/${data.id}`
     }
   })
 return redirect("/dashboard/invoices")
@@ -149,7 +149,7 @@ emailClient.send({
     "invoiceDate": submission.value.date,
     "dueDate": submission.value.dueDate,
     "totalAmount": fomatCurrency(submission.value.total,submission.value.currency),
-    "invoiceLink":`http://localhost:3000/api/invoice/${data.id}`
+    "invoiceLink":`https://invoice-platform-xi.vercel.app/${data.id}`
   }
 })
 return redirect("/dashboard/invoices")
