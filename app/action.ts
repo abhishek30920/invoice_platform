@@ -84,7 +84,7 @@ console.log(submission)
   }
   emailClient.send({
     from :sender,
-    to:[{email:process.env.email}],
+    to:[{email:"abhishek309200@gmail.com"}],
     template_uuid: "0791434e-90ab-40e5-9007-55e004503116",
     template_variables: {
       "clientName": submission.value.clientName,

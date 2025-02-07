@@ -28,7 +28,7 @@ const {invoiceId}=await params;
     }
     emailClient.send({
       from :sender,
-      to:[{email:process.env.email}],
+      to:[{email:"abhishek309200@gmail.com"}],
       subject:"Reminder Invoice Payment",
       text:`Hi ${invoiceData.clientName},\n\nThis is a reminder that your invoice ${invoiceData.invoiceName} is due on ${invoiceData.dueDate}. Please make the payment as soon as possible.\n\nThanks,\n${invoiceData.fromName}`
       
